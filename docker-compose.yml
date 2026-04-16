@@ -1,0 +1,28 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      APP_PORT: 8080
+      JWT_SECRET: change-this-in-production
+      WEBRTC_STUN: stun:stun.l.google.com:19302
+      WEBRTC_TURN_URL: ${WEBRTC_TURN_URL:-turn:134.175.183.115:3478?transport=udp}
+      WEBRTC_TURN_USERNAME: ${WEBRTC_TURN_USERNAME:-interview}
+      WEBRTC_TURN_CREDENTIAL: ${WEBRTC_TURN_CREDENTIAL:-interviewpass}
+    depends_on:
+      - coturn
+
+  coturn:
+    image: coturn/coturn:4.6.3
+    command:
+      - -c
+      - /etc/coturn/turnserver.conf
+    volumes:
+      - ./deploy/coturn/turnserver.conf:/etc/coturn/turnserver.conf:ro
+    ports:
+      - "3479:3478/udp"
+      - "3479:3478/tcp"
+      - "49160-49200:49160-49200/udp"
